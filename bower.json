@@ -1,0 +1,21 @@
+{
+  "name": "listening_to",
+  "main": "static/index.html",
+  "version": "0.0.0",
+  "homepage": "https://github.com/RangerMauve/listening_to",
+  "authors": [
+    "RangerMauve <RangerMauve@hotmail.com>"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "rivets": "~0.6.8"
+  }
+}
