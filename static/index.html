@@ -1,0 +1,77 @@
+<title>Listening to</title>
+
+<main>
+	<section class="songs">
+		<h2>Songs</h2>
+		<div>
+			<select rv-value="to_play">
+				<option rv-each-song="songs" rv-value="song">{song}</audio>
+			</select>
+			<button rv-on-click="play_song">Select</button>
+		</div>
+		<div>
+			<audio rv-src="song_src" autoplay loop controls></audio>
+		</div>
+	</section>
+	<section sclass="listeners">
+		<h2>Also Listening:<button rv-on-click="update_listeners">Update</button></h2>
+		<div rv-each-listener="listeners">
+			{listener.id} is listening to {listener.song}
+		</div>
+	</section>
+</main>
+
+<script src="http://cdn.sockjs.org/sockjs-0.3.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/reqwest/1.1.0/reqwest.min.js"></script>
+<script src="/bower_components/rivets/dist/rivets.min.js"></script>
+<script>
+	var myid = ranstr(8);
+	var sock = new SockJS("/messages");
+	sock.onopen = function () {
+		sock.send(JSON.stringify(myid));
+		model.update_songs();
+		model.update_listeners();
+	}
+
+	sock.onmessage = function (data) {
+		data = JSON.parse(data);
+	}
+	var model = {
+		id: myid,
+		to_play: "",
+		song_src: "",
+		listeners: [],
+		play_song: function () {
+			model.song_src = "/songs/" + model.to_play;
+			sock.send(JSON.stringify({
+				type: "song",
+				song: model.to_play
+			}));
+		},
+		update_songs: function () {
+			Promise.resolve(reqwest("/songs")).then(function (data) {
+				model.songs = data;
+			}).catch(alert);
+		},
+		update_listeners: function () {
+			Promise.resolve(reqwest("/listening")).then(function (data) {
+				model.listeners = data;
+			});
+		}
+	};
+	rivets.bind(document.querySelector("main"), model);
+
+	function ranstr(n) {
+		var res = "";
+		var lets = "abcdefghijklmnopqrstuvwxyz";
+		res += ran().toUpperCase();
+		n--;
+		while (n--)
+			res += ran();
+		return res;
+
+		function ran() {
+			return lets[Math.floor(Math.random() * lets.length)];
+		}
+	}
+</script>
