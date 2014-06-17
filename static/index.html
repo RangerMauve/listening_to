@@ -25,17 +25,29 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/reqwest/1.1.0/reqwest.min.js"></script>
 <script src="/bower_components/rivets/dist/rivets.min.js"></script>
 <script>
+	// Generate your ID
 	var myid = ranstr(8);
+	// Make a websocket connection
 	var sock = new SockJS("/messages");
 	sock.onopen = function () {
+		// When the socket opens
+
+		// Send your ID as the first thing
 		sock.send(JSON.stringify(myid));
+
+		// Get song list
 		model.update_songs();
+
+		// Get current listener list
 		model.update_listeners();
 	}
 
+	// Don't do anything with messages at the moment
 	sock.onmessage = function (data) {
 		data = JSON.parse(data);
 	}
+
+	// Model to be used by rivets
 	var model = {
 		id: myid,
 		to_play: "",
@@ -43,17 +55,20 @@
 		listeners: [],
 		play_song: function () {
 			model.song_src = "/songs/" + model.to_play;
+			// When playing a song, send the song name with the websocket
 			sock.send(JSON.stringify({
 				type: "song",
 				song: model.to_play
 			}));
 		},
 		update_songs: function () {
+			// Retreives the song list from the server
 			Promise.resolve(reqwest("/songs")).then(function (data) {
 				model.songs = data;
 			}).catch(alert);
 		},
 		update_listeners: function () {
+			// Retreives the listener list from the server
 			Promise.resolve(reqwest("/listening")).then(function (data) {
 				model.listeners = data;
 			});
