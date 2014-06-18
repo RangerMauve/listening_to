@@ -44,7 +44,14 @@
 
 	// Don't do anything with messages at the moment
 	sock.onmessage = function (data) {
-		data = JSON.parse(data);
+		console.log(data);
+		data = JSON.parse(data.data);
+		if (data.type === "change_song") {
+			model.set_listener(data.id, {
+				id: data.id,
+				song: data.song
+			});
+		}
 	}
 
 	// Model to be used by rivets
@@ -71,7 +78,19 @@
 			// Retreives the listener list from the server
 			Promise.resolve(reqwest("/listening")).then(function (data) {
 				model.listeners = data;
+			}).catch(console.error.bind(console));
+		},
+		set_listener: function (id, data) {
+			var has_changed = false;
+			model.listeners.forEach(function (listener,index) {
+				if (listener.id === id) {
+					Object.keys(data).forEach(function(key){
+						model.listeners[index][key] = data[key];
+					})
+					has_changed = true;
+				}
 			});
+			if (!has_changed) model.listeners.push(data);
 		}
 	};
 	rivets.bind(document.querySelector("main"), model);
